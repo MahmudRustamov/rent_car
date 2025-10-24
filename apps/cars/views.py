@@ -111,19 +111,19 @@ class RentalListAPIView(ListAPIView):
 
 
 class RentalCancelAPIView(GenericAPIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = ReturnCarSerializer
 
     def post(self, request, rental_id):
         try:
             rental = request.user.rentals.get(pk=rental_id)
-        except Car.DoesNotExist:
+        except Rental.DoesNotExist:
             return Response(data={'errors': 'Rental not found'}, status=400)
 
         if rental.status in ['completed', 'cancelled']:
-            return Response(data={'errors': 'You can not cancel'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'errors': 'You can not cancel this rental because it is already cancelled or completed'}, status=status.HTTP_400_BAD_REQUEST)
 
-        rental.status = 'cancel'
+        rental.status = 'cancelled'
         rental.save()
 
         rental.car.is_available = True
