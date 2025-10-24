@@ -28,6 +28,12 @@ class Rental(models.Model):
         ('card', 'Card'),
     ]
 
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rentals')
     car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name='rentals')
     days = models.PositiveSmallIntegerField()
@@ -36,6 +42,7 @@ class Rental(models.Model):
     is_returned = models.BooleanField(default=False)
     start_date = models.DateField(auto_now_add=True)
     end_date = models.DateField(blank=True, null=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

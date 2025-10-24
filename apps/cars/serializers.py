@@ -19,6 +19,27 @@ class RentalSerializer(serializers.ModelSerializer):
         model = Rental
         fields = '__all__'
 
+class CarRetrieveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Car
+        exclude = ['created_at']
 
+
+
+class RentalListSerializer(serializers.ModelSerializer):
+    cars = CarSerializer(read_only=True)
+
+    class Meta:
+        model = Rental
+        fields = ['id', 'cars', 'start_date', 'end_date', 'total_price', 'is_returned', 'created_at']
+
+
+class ReturnCarSerializer(serializers.ModelSerializer):
+    cars = CarSerializer(read_only=True)
+
+    class Meta:
+        model = Rental
+        fields = ['id', 'cars', 'start_date', 'end_date', 'total_price', 'status', 'is_returned']
+        read_only_fields = ['id', 'cars', 'start_date', 'end_date', 'total_price', 'is_returned']
 
 

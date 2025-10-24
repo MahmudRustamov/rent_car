@@ -1,18 +1,20 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
-
-from apps.accounts.models import CustomUser
+from django.contrib.auth.models import User
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    password_confirm = serializers.CharField(write_only=True)
     class Meta:
-        model = CustomUser
-        fields = ['email',"username",'phone_number','bio','profile_image']
-        extra_kwargs = ['is_active']
+        model = User
+        fields = ['id', 'username', 'email', 'password', 'password_confirm']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
 
     def create(self, validated_data):
         validated_data.pop('password_confirm')
-        user = CustomUser.objects.create_user(**validated_data)
+        user = User.objects.create_user(**validated_data)
         user.set_password(validated_data['password'])
         user.save()
         return user
@@ -24,13 +26,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'password_confirm': 'Passwords do not match!'})
         return attrs
 
-    @staticmethod
-    def validate_phone_number(value):
-        if not value.startswith('+998'):
-            raise serializers.ValidationError("Phone number must start with +998")
-        elif len(value) != 13:
-            raise serializers.ValidationError("Phone number must be 13 characters long")
-        return value
 
     @staticmethod
     def validate_username(value):
@@ -56,3 +51,20 @@ class LoginSerializer(serializers.Serializer):
         else:
             attrs['user'] = user
             return attrs
+
+
+class ProfileRetrieveSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    rentals_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['id','email','username','full_name','rentals_count']
+
+    @staticmethod
+    def get_full_name(obj):
+        return f"{obj.first_name} {obj.last_name}".strip()
+
+    @staticmethod
+    def get_rentals_count(obj):
+        return obj.rentals.count()
